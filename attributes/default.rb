@@ -5,6 +5,7 @@ default[:magento][:sample_data_url] = '' # http://www.magentocommerce.com/downlo
 default[:magento][:run_type] = "store"
 default[:magento][:run_codes] = Array.new
 default[:magento][:session]['save'] = 'db'
+default[:magento][:system_user] = 'magento'
 
 # Required packages
 case node["platform_family"]
@@ -36,3 +37,7 @@ set_unless['php-fpm']['pool']['magento']['max_requests'] = 500
 default[:magento][:db][:database] = "magento"
 default[:magento][:db][:username] = "magentouser"
 set_unless[:magento][:db][:password] = secure_password
+
+# Database settings
+default['mysql']['bind_address'] = "localhost"
+default['mysql']['port'] = "3306"

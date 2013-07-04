@@ -20,7 +20,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   enc_key = nil # magento encryption key
   machine = node['kernel']['machine'] =~ /x86_64/ ? 'x86_64' : 'i686'
   webserver = node[:magento][:webserver]
-  user = 'magento'
+  user = node[:magento][:system_user]
   group = node[webserver]['group']
   php_conf =  if platform?('centos', 'redhat')
                 ["/etc", "/etc/php.d"]
@@ -106,7 +106,10 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
 
   # Setup Database
   # if Chef::Config[:solo]
-    db_config = { :host => 'localhost' }
+    db_config = {
+      :host => node['mysql']['bind_address'],
+      :port => node['mysql']['port']
+    }
     db_user = node[:magento][:db]
   # else
     # FIXME: data bags search throwing 404 error: Net::HTTPServerException
@@ -117,6 +120,18 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
 
   if 'localhost' == db_config[:host]
     magento_database
+
+    # Setup /root/.my.cnf for easier management
+    template "/root/.my.cnf" do
+      source "dotmy.cnf.erb"
+      owner "root"
+      group "root"
+      mode "0600"
+      variables(
+        :rootpasswd => node['mysql']['server_root_password'],
+        :port => node['mysql']['port']
+      )
+    end
   end
 
   # Import Sample Data
@@ -137,7 +152,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
         mv media/* #{node[:magento][:dir]}/media/
 
         mv magento_sample_data*.sql data.sql 2>/dev/null
-        /usr/bin/mysql -h #{db_config[:host]} -u #{db_user[:username]} -p#{db_user[:password]} #{db_user[:database]} < data.sql
+        /usr/bin/mysql -h #{db_config[:host]} -P #{db_config[:port]} -u #{db_user[:username]} -p#{db_user[:password]} #{db_user[:database]} < data.sql
         cd ..
         rm -rf #{name}
         EOH
