@@ -118,7 +118,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     # enc_key = search(:magento, "id:enckey").first
   # end
 
-  if 'localhost' == db_config[:host]
+  if 'localhost' == db_config[:host] || '127.0.0.1' == db_config[:host]
     magento_database
 
     # Setup /root/.my.cnf for easier management

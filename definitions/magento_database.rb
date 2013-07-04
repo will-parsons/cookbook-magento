@@ -37,6 +37,18 @@ define :magento_database do
     end
   end
 
+  # Setup /root/.my.cnf for easier management
+  template "/root/.my.cnf" do
+    source "dotmy.cnf.erb"
+    owner "root"
+    group "root"
+    mode "0600"
+    variables(
+      :rootpasswd => node['mysql']['server_root_password'],
+      :port => node['mysql']['port']
+    )
+  end
+
   # save node data after writing the MYSQL root password, so that a failed chef-client run that gets this far doesn't cause an unknown password to get applied to the box without being saved in the node data.
   unless Chef::Config[:solo]
     ruby_block "save node data" do
