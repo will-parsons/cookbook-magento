@@ -1,11 +1,4 @@
 define :magento_initial_configuration do
-
-  gem_package "mysql" do
-    action :install
-  end
-
-  # TODO: Validate database doesn't exist before configuring
-
   # Configure all the things
   bash "Configure Magento" do
     cwd node[:magento][:dir]
