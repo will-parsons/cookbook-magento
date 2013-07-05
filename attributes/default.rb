@@ -1,11 +1,24 @@
 # General settings
-default[:magento][:url] = "http://www.magentocommerce.com/downloads/assets/1.7.0.2/magento-1.7.0.2.tar.gz"
+default[:magento][:download_url] = "http://www.magentocommerce.com/downloads/assets/1.7.0.2/magento-1.7.0.2.tar.gz"
 default[:magento][:dir] = "/var/www/magento"
 default[:magento][:sample_data_url] = '' # http://www.magentocommerce.com/downloads/assets/1.6.1.0/magento-sample-data-1.6.1.0.tar.gz
 default[:magento][:run_type] = "store"
 default[:magento][:run_codes] = Array.new
-default[:magento][:session]['save'] = 'db'
+default[:magento][:session][:save] = 'db' # db, memcache, or files
 default[:magento][:system_user] = 'magento'
+default[:magento][:encryption_key] = ''
+
+# Magento Website Conifiguration
+default[:magento][:locale] = "en_US"
+default[:magento][:timezone] = "America/Chicago"
+default[:magento][:default_currency] = "USD"
+default[:magento][:admin_frontname] = "admin"
+default[:magento][:url] = "http://example.com/"
+default[:magento][:use_rewrites] = "yes"
+default[:magento][:use_secure] = "yes"
+default[:magento][:secure_base_url] = "https://example.com/"
+default[:magento][:use_secure_admin] = "yes"
+default[:magento][:enable_charts] = "yes"
 
 # Required packages
 case node["platform_family"]
@@ -31,13 +44,21 @@ set_unless['php-fpm']['pool']['magento']['min_spare_servers'] = 5
 set_unless['php-fpm']['pool']['magento']['max_spare_servers'] = 35
 set_unless['php-fpm']['pool']['magento']['max_requests'] = 500
 
-# Credentials
+# Database Credentials
 ::Chef::Node.send(:include, Opscode::OpenSSL::Password)
 
 default[:magento][:db][:database] = "magento"
+default[:magento][:db][:prefix] = ""
 default[:magento][:db][:username] = "magentouser"
 set_unless[:magento][:db][:password] = secure_password
 
 # Database settings
 default['mysql']['bind_address'] = "localhost"
 default['mysql']['port'] = "3306"
+
+# Magento Admin User
+default[:magento][:admin_user][:firstname] = 'Admin' # Required
+default[:magento][:admin_user][:lastname] = 'User' # Required
+default[:magento][:admin_user][:email] = 'admin@example.org' # Required
+default[:magento][:admin_user][:username] = 'MagentoAdmin' # Required
+default[:magento][:admin_user][:password] = 'magPass.123' # Required

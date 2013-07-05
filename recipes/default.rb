@@ -17,7 +17,20 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     server_fqdn = node.fqdn
   end
 
-  enc_key = nil # magento encryption key
+  unless node[:magento][:encryption_key]
+    node.set[:magento][:encryption_key] = magento_encryption_key()
+    unless Chef::Config[:solo] # Saving the key incase of failed Chef run
+      ruby_block "save node data" do
+        block do
+          node.save
+        end
+        action :create
+      end
+    end
+  end
+
+  enc_key = node[:magento][:encryption_key] 
+
   machine = node['kernel']['machine'] =~ /x86_64/ ? 'x86_64' : 'i686'
   webserver = node[:magento][:webserver]
   user = node[:magento][:system_user]
@@ -93,9 +106,9 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   magento_site
 
   # Fetch magento release
-  unless node[:magento][:url].empty?
+  unless node[:magento][:download_url].empty?
     remote_file "#{Chef::Config[:file_cache_path]}/magento.tar.gz" do
-      source node[:magento][:url]
+      source node[:magento][:download_url]
       mode "0644"
     end
     execute "untar-magento" do
@@ -118,20 +131,11 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     # enc_key = search(:magento, "id:enckey").first
   # end
 
+  admin_user = node[:magento][:admin_user]
   if 'localhost' == db_config[:host] || '127.0.0.1' == db_config[:host]
+    # Install and configure MySQL
     magento_database
-
-    # Setup /root/.my.cnf for easier management
-    template "/root/.my.cnf" do
-      source "dotmy.cnf.erb"
-      owner "root"
-      group "root"
-      mode "0600"
-      variables(
-        :rootpasswd => node['mysql']['server_root_password'],
-        :port => node['mysql']['port']
-      )
-    end
+    
   end
 
   # Import Sample Data
@@ -159,21 +163,26 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     end
   end
 
-  # Generate local.xml file
-  if enc_key
-    template "#{node[:magento][:dir]}/app/etc/local.xml" do
-      source "local.xml.erb"
-      mode "0600"
-      owner "#{node[:magento][:user]}"
-      variables(
-        :db_config => db_config,
-        :db_user => db_user,
-        :enc_key => enc_key,
-        :session => node[:magento][:session],
-        :inst_date => inst_date
-      )
-    end
-  end
+  # Perform base setup of Magento
+  # http://www.magentocommerce.com/wiki/groups/227/command_line_installation_wizard
+  
+
+  # Magento Configuration local.xml file
+  # Encryption Key is set earlier in the recipe if one is not provided
+  # if enc_key
+  #  template "#{node[:magento][:dir]}/app/etc/local.xml" do
+  #    source "local.xml.erb"
+  #    mode "0600"
+  #    owner "#{node[:magento][:system_user]}"
+  #    variables(
+  #      :db_config => db_config,
+  #      :db_user => db_user,
+  #      :enc_key => enc_key,
+  #      :session => node[:magento][:session],
+  #      :inst_date => inst_date
+  #    )
+  #  end
+  # end
 
   bash "Ensure correct permissions & ownership" do
     cwd node[:magento][:dir]
@@ -183,6 +192,8 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     chmod -R o+w var
     EOH
   end
+
+  magento_initial_configuration
 
   bash "Touch .installed flag" do
     cwd node[:magento][:dir]
