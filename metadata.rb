@@ -11,7 +11,7 @@ recipe           "magento", "Prepares app stack for magento deployments"
   supports os
 end
 
-%w{ apt yum apache2 nginx mysql openssl php }.each do |cb|
+%w{ apt yum apache2 nginx mysql openssl php firewall }.each do |cb|
   depends cb
 end
 
