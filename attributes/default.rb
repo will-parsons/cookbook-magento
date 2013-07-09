@@ -8,9 +8,9 @@ default[:magento][:session][:save] = 'db' # db, memcache, or files
 default[:magento][:system_user] = 'magento'
 default[:magento][:encryption_key] = ''
 
-# Firewall configuration
-default[:magento][:firewall][:http] = '80'
-default[:magento][:firewall][:https] = '443'
+# Firewall configuration - Ports must be integers
+default[:magento][:firewall][:http] = 80
+default[:magento][:firewall][:https] = 443
 default[:magento][:firewall][:interface] = 'eth0'
 
 # Magento Website Conifiguration
