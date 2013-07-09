@@ -8,6 +8,11 @@ default[:magento][:session][:save] = 'db' # db, memcache, or files
 default[:magento][:system_user] = 'magento'
 default[:magento][:encryption_key] = ''
 
+# Firewall configuration
+default[:magento][:firewall][:http] = '80'
+default[:magento][:firewall][:https] = '443'
+default[:magento][:firewall][:interface] = 'eth0'
+
 # Magento Website Conifiguration
 default[:magento][:locale] = "en_US"
 default[:magento][:timezone] = "America/Chicago"
