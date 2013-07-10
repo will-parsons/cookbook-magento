@@ -1,7 +1,8 @@
 # General settings
 default[:magento][:download_url] = "http://www.magentocommerce.com/downloads/assets/1.7.0.2/magento-1.7.0.2.tar.gz"
 default[:magento][:dir] = "/var/www/magento"
-default[:magento][:sample_data_url] = '' # http://www.magentocommerce.com/downloads/assets/1.6.1.0/magento-sample-data-1.6.1.0.tar.gz
+default[:magento][:use_sample_data] = false
+default[:magento][:sample_data_url] = 'http://www.magentocommerce.com/downloads/assets/1.6.1.0/magento-sample-data-1.6.1.0.tar.gz'
 default[:magento][:run_type] = "store"
 default[:magento][:run_codes] = Array.new
 default[:magento][:session][:save] = 'db' # db, memcache, or files

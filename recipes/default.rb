@@ -139,7 +139,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   end
 
   # Import Sample Data
-  unless node[:magento][:sample_data_url].empty?
+  if node[:magento][:use_sample_data]
     include_recipe "mysql::client"
 
     remote_file "#{Chef::Config[:file_cache_path]}/magento-sample-data.tar.gz" do
