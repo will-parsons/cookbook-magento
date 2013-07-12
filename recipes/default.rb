@@ -17,6 +17,11 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     server_fqdn = node.fqdn
   end
 
+  if node[:magento][:hostname]
+    node.set[:magento][:url] = "http://#{node[:magento][:hostname]}/"
+    node.set[:magento][:secure_base_url] = "https://#{node[:magento][:hostname]}/"
+  end
+
   unless node[:magento][:encryption_key]
     node.set[:magento][:encryption_key] = magento_encryption_key()
     unless Chef::Config[:solo] # Saving the key incase of failed Chef run
