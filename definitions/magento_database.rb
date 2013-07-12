@@ -9,6 +9,9 @@ define :magento_database do
 
   case node[:platform_family]
   when "rhel", "fedora"
+    package "mysql-devel" do
+      action :install
+    end
     chef_gem "mysql" do
       action :install
     end
