@@ -15,18 +15,27 @@
 # limitations under the License.
 #
 
-include_recipe "firewall"
+case node["platform_family"]
+when "rhel", "fedora"
+  include_recipe "iptables"
 
-firewall_rule "http" do
-  port node['magento']['firewall']['http']
-  protocol :tcp
-  interface node['magento']['firewall']['interface']
-  action :allow
-end
+  iptables_rule "http"
+  iptables_rule "https"
 
-firewall_rule "https" do
-  port node['magento']['firewall']['https']
-  protocol :tcp
-  interface node['magento']['firewall']['interface']
-  action :allow
+else
+  include_recipe "firewall"
+
+  firewall_rule "http" do
+    port node['magento']['firewall']['http']
+    protocol :tcp
+    interface node['magento']['firewall']['interface']
+    action :allow
+  end
+
+  firewall_rule "https" do
+    port node['magento']['firewall']['https']
+    protocol :tcp
+    interface node['magento']['firewall']['interface']
+    action :allow
+  end
 end

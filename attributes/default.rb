@@ -28,7 +28,9 @@ default[:magento][:enable_charts] = "yes"
 
 # Required packages
 case node[:platform_family]
-when "rhel", "fedora"
+when "rhel"
+  default[:magento][:packages] = ['php-cli', 'php-common', 'php-curl', 'php-gd', 'php-mysql', 'php-pear', 'php-pecl-apc', 'php-xml', 'ruby-devel'] # php-mcyrpt not in default yum repo
+when "fedora"
   default[:magento][:packages] = ['php-cli', 'php-common', 'php-curl', 'php-gd', 'php-mcrypt', 'php-mysql', 'php-pear', 'php-apc', 'php-xml']
 else
   default[:magento][:packages] = ['php5-cli', 'php5-common', 'php5-curl', 'php5-gd', 'php5-mcrypt', 'php5-mysql', 'php-pear', 'php-apc']

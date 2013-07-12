@@ -54,8 +54,15 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   # Centos Polyfills
   if platform?('centos', 'redhat')
     execute "Install libmcrypt" do
+      not_if "rpm -qa | grep -qx  'libmcrypt-2.5.7-1.2.el6.rf'"
       command "rpm -Uvh --nosignature --replacepkgs http://pkgs.repoforge.org/libmcrypt/libmcrypt-2.5.7-1.2.el6.rf.#{machine}.rpm"
       action :run
+    end
+    execute "Install php-mcrypt" do
+      not_if "rpm -qa | grep -qx 'php-mcrypt'"
+      command "rpm -Uvh --nosignature --replacepkgs http://dl.fedoraproject.org/pub/epel/6/x86_64/php-mcrypt-5.3.3-1.el6.x86_64.rpm"
+      action :run
+      notifies :restart, "service[php-fpm]"
     end
   end
 

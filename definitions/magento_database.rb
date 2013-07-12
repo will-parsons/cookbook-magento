@@ -7,8 +7,15 @@ define :magento_database do
     action :upgrade
   end
 
-  gem_package "mysql" do
-    action :install
+  case node[:platform_family]
+  when "rhel", "fedora"
+    chef_gem "mysql" do
+      action :install
+    end
+  else
+    gem_package "mysql" do
+      action :install
+    end
   end
 
   execute "mysql-install-mage-privileges" do

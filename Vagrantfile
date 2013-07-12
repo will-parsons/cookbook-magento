@@ -10,11 +10,11 @@ Vagrant.configure("2") do |config|
 
   case ENV['VMBOX']
   when 'centos63'
-    config.vm.box = "Berkshelf-CentOS-6.3-x86_64-minimal"
-    config.vm.box_url = "https://dl.dropbox.com/u/31081437/Berkshelf-CentOS-6.3-x86_64-minimal.box"
+    config.vm.box = "CentOS-6.4-x86_64-minimal"
+    config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box"
   else
-    config.vm.box = "Ubuntu precise 64"
-    config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+    config.vm.box = "opscode-ubuntu-12.04"
+    config.vm.box_url = "https://opscode-vm.s3.amazonaws.com/vagrant/opscode_ubuntu-12.04_chef-11.2.0.box"
   end
 
   # Assign this VM to a host-only network IP, allowing you to access it
@@ -83,12 +83,13 @@ Vagrant.configure("2") do |config|
         :db => {
           :password => 'magepass'
         },
-        :sample_data_url => 'http://www.magentocommerce.com/downloads/assets/1.6.1.0/magento-sample-data-1.6.1.0.tar.gz'
       }
     }
 
     chef.run_list = [
-        "recipe[magento]"
+        "recipe[magento]",
+        "recipe[magento::memcached]",
+        "recipe[magento::firewall]"
     ]
   end
 end
