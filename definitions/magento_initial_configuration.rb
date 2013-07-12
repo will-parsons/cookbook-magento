@@ -1,4 +1,12 @@
 define :magento_initial_configuration do
+
+  if platform?("debian") 
+    execute "Fixing extension bug that can cause Debian installs to fail" do
+      command "sed -i 's/\<pdo_mysql\/\>/\<pdo_mysql\>1\<\/pdo_mysql\>/' #{node[:magento][:dir]}/app/code/core/Mage/Install/etc/config.xml"
+      action :run
+    end
+  end
+
   # Configure all the things
   bash "Configure Magento" do
     cwd node[:magento][:dir]
