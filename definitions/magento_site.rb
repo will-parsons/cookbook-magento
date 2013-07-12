@@ -53,6 +53,8 @@ define :magento_site do
       group "root"
       mode 0644
       variables(
+        :http => node[:magento][:firewall][:http],
+        :https => node[:magento][:firewall][:https],
         :path => "#{node[:magento][:dir]}",
         :ssl => (site == "ssl")?true:false
       )

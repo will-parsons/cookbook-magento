@@ -163,27 +163,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     end
   end
 
-  # Perform base setup of Magento
-  # http://www.magentocommerce.com/wiki/groups/227/command_line_installation_wizard
-  
-
-  # Magento Configuration local.xml file
-  # Encryption Key is set earlier in the recipe if one is not provided
-  # if enc_key
-  #  template "#{node[:magento][:dir]}/app/etc/local.xml" do
-  #    source "local.xml.erb"
-  #    mode "0600"
-  #    owner "#{node[:magento][:system_user]}"
-  #    variables(
-  #      :db_config => db_config,
-  #      :db_user => db_user,
-  #      :enc_key => enc_key,
-  #      :session => node[:magento][:session],
-  #      :inst_date => inst_date
-  #    )
-  #  end
-  # end
-
   bash "Ensure correct permissions & ownership" do
     cwd node[:magento][:dir]
     code <<-EOH

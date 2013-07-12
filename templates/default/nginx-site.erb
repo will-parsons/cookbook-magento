@@ -5,13 +5,13 @@ map $http_host $magesite {
 
 server {
 <% if @ssl %>
-  listen 443;
+  listen <%= @https %>;
   ssl on;
   ssl_certificate ssl/magento.pem;
   ssl_certificate_key ssl/magento.pem;
   access_log  <%= node[:nginx][:log_dir] %>/magento-ssl.access.log;
 <% else %>
-  listen 80;
+  listen <%= @http %>;
   access_log  <%= node[:nginx][:log_dir] %>/magento.access.log;
 <% end %>
 

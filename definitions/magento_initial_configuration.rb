@@ -10,6 +10,7 @@ define :magento_initial_configuration do
     --timezone "#{node[:magento][:timezone]}" \
     --default_currency "#{node[:magento][:default_currency]}" \
     --db_host "#{node['mysql']['bind_address']}:#{node['mysql']['port']}" \
+    --db_model "#{node[:magento][:db][:model]}" \
     --db_name "#{node[:magento][:db][:database]}" \
     --db_user "#{node[:magento][:db][:username]}" \
     --db_pass "#{node[:magento][:db][:password]}" \

@@ -27,7 +27,7 @@ default[:magento][:use_secure_admin] = "yes"
 default[:magento][:enable_charts] = "yes"
 
 # Required packages
-case node["platform_family"]
+case node[:platform_family]
 when "rhel", "fedora"
   default[:magento][:packages] = ['php-cli', 'php-common', 'php-curl', 'php-gd', 'php-mcrypt', 'php-mysql', 'php-pear', 'php-apc', 'php-xml']
 else
@@ -50,17 +50,24 @@ set_unless['php-fpm']['pool']['magento']['min_spare_servers'] = 5
 set_unless['php-fpm']['pool']['magento']['max_spare_servers'] = 35
 set_unless['php-fpm']['pool']['magento']['max_requests'] = 500
 
-# Database Credentials
+# Database Credentials & Connection Settings
 ::Chef::Node.send(:include, Opscode::OpenSSL::Password)
 
-default[:magento][:db][:database] = "magento"
-default[:magento][:db][:prefix] = ""
-default[:magento][:db][:username] = "magentouser"
+default[:magento][:db][:database] = 'magento'
+default[:magento][:db][:prefix] = ''
+default[:magento][:db][:username] = 'magentouser'
 set_unless[:magento][:db][:password] = secure_password
 
+# Options for configurating Magento connectivity to database.
+default[:magento][:db][:initStatements] = 'SET NAMES utf8'
+default[:magento][:db][:model] = 'mysql4'
+default[:magento][:db][:type] = 'pdo_mysql'
+default[:magento][:db][:pdoType] = ''
+default[:magento][:db][:active] = '1'
+
 # Database settings
-default['mysql']['bind_address'] = "localhost"
-default['mysql']['port'] = "3306"
+default[:mysql][:bind_address] = "localhost"
+default[:mysql][:port] = "3306"
 
 # Magento Admin User
 default[:magento][:admin_user][:firstname] = 'Admin' # Required
