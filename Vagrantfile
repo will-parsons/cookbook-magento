@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "cookbook-magento-berkshelf"
 
   case ENV['VMBOX']
-  when 'centos63'
+  when 'centos64'
     config.vm.box = "CentOS-6.4-x86_64-minimal"
     config.vm.box_url = "http://developer.nrel.gov/downloads/vagrant-boxes/CentOS-6.4-x86_64-v20130427.box"
   else
