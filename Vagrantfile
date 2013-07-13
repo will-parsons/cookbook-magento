@@ -88,7 +88,6 @@ Vagrant.configure("2") do |config|
     }
 
     chef.run_list = [
-        "recipe[mysql::ruby]",
         "recipe[magento]",
         "recipe[magento::memcached]",
         "recipe[magento::firewall]"

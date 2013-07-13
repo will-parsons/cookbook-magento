@@ -20,7 +20,7 @@ server {
   autoindex off;
 
   # protection (we have no .htaccess)
-  location ~ (^/(app/|includes/|lib/|/pkginfo/|var/|report/config.xml)|/\.git/|/\.hg/|/\.svn/|/.hta.+) {
+  location ~ (^/(app/|includes/|lib/|/pkginfo/|var/|report/config.xml)|/\.git/|/\.hg/|/\.svn/|\.installed|/.hta.+) {
     deny all;
   }
 

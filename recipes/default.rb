@@ -7,6 +7,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   case node["platform_family"]
   when "rhel", "fedora"
     include_recipe "yum"
+    include_recipe "mysql::ruby"
   else
     include_recipe "apt"
   end
@@ -185,6 +186,13 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   end
 
   magento_initial_configuration
+
+  execute "Index Everything" do
+    cwd node[:magento][:dir]
+    user user
+    action :run
+    command "php -f shell/indexer.php reindexall"
+  end
 
   bash "Touch .installed flag" do
     cwd node[:magento][:dir]
