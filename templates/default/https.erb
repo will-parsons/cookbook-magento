@@ -1,2 +1,2 @@
 # Port <%= node[:magento][:firewall][:https] %> for http
--A FWR -p tcp -m tcp --dport <%= node[:magento][:firewall][:https] %> -j ACCEPT
+-A INPUT -p tcp -m tcp --dport <%= node[:magento][:firewall][:https] %> -j ACCEPT
