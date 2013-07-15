@@ -17,11 +17,18 @@
 
 case node["platform_family"]
 when "rhel", "fedora"
-  include_recipe "iptables"
-
-  iptables_rule "http"
-  iptables_rule "https"
-
+  fwfile = "/etc/sysconfig/iptables"
+  %w{ http https }.each do |port|
+    rule = "-I INPUT -p tcp -m tcp --dport #{node[:magento][:firewall][port]} -j ACCEPT"
+    execute "Adding iptables rule for #{port}" do
+      command "iptables #{rule}"
+      not_if "grep \"\-#{rule}\" #{fwfile}"
+    end
+  end
+  # Save iptables rules
+  execute "Saving iptables rule set" do
+    command "/sbin/service iptables save"
+  end
 else
   include_recipe "firewall"
 
