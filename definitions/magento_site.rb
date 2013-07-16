@@ -2,6 +2,11 @@ define :magento_site do
 
   include_recipe "nginx"
 
+  ssl_admin = (node[:magento][:ssl].nil? or node[:magento][:ssl][:private_key].nil? or
+               node[:magento][:ssl][:private_key].empty? or node[:magento][:ssl][:cert].nil? or
+               node[:magento][:ssl][:cert].empty?) ? false : true rescue false
+
+  # Begin SSL configuration
   directory "#{node[:nginx][:dir]}/ssl" do
     owner "root"
     group "root"
@@ -9,24 +14,86 @@ define :magento_site do
     action :create
   end
 
-  bash "Create SSL Certificates" do
-    cwd "#{node[:nginx][:dir]}/ssl"
-    code <<-EOH
-    umask 022
-    openssl genrsa 2048 > magento.key
-    openssl req -batch -new -x509 -days 365 -key magento.key -out magento.crt
-    cat magento.crt magento.key > magento.pem
-    EOH
-    only_if { File.zero?("#{node[:nginx][:dir]}/ssl/magento.pem") }
-    action :nothing
+  if node[:magento][:hostname]
+    sitedomain = node[:magento][:hostname]
+  else
+    sitedomain = "magento"
   end
 
-  cookbook_file "#{node[:nginx][:dir]}/ssl/magento.pem" do
-    source "cert.pem"
-    mode 0644
-    owner "root"
-    group "root"
-    notifies :run, resources(:bash => "Create SSL Certificates"), :immediately
+  if ssl_admin # Install certs if provided
+    file "#{node[:nginx][:dir]}/ssl/#{sitedomain}.key" do
+      content node[:magento][:ssl][:private_key]
+      owner "root"
+      group "root"
+      mode "0600"
+      action :create_if_missing
+    end
+    if defined?(node[:magento][:ssl][:ca]) 
+      file "#{node[:nginx][:dir]}/ssl/#{sitedomain}.ca" do
+        content node[:magento][:ssl][:ca]
+        owner "root"
+        group "root"
+        mode "0644"
+        action :create_if_missing
+      end
+      certpath = "#{node[:nginx][:dir]}/ssl/#{sitedomain}.certificate"
+    else
+      certpath = "#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt"
+    end
+    file "#{certpath}" do
+      content node[:magento][:ssl][:cert]
+      owner "root"
+      group "root"
+      mode "0644"
+      action :create_if_missing
+    end
+
+    if !File.exists?("#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt") || File.zero?("#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt") 
+      bash "Combine Certificate and Intermediate Certificates" do
+        cwd "#{node[:nginx][:dir]}/ssl"
+        code "cat #{sitedomain}.certificate #{sitedomain}.ca > #{sitedomain}.crt"
+        only_if { File.zero?("#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt") }
+        action :nothing
+      end
+      cookbook_file "#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt" do
+        source "blank"
+        mode 0644
+        owner "root"
+        group "root"
+        action :create_if_missing
+        notifies :run, resources(:bash => "Combine Certificate and Intermediate Certificates"), :immediately
+      end
+    end
+
+  else # Create and install a self-signed cert if no certs provided and secure perms on generated key
+    bash "Create Self-Signed SSL Certificate" do
+      cwd "#{node[:nginx][:dir]}/ssl"
+      code <<-EOH
+      openssl req -x509 -nodes -days 730 \
+        -subj '/CN='#{sitedomain}'/O=Magento/C=US/ST=Texas/L=San Antonio' \
+        -newkey rsa:2048 -keyout #{sitedomain}.key -out #{sitedomain}.crt
+      chmod 600 #{node[:nginx][:dir]}/ssl/#{sitedomain}.key
+      EOH
+      only_if { File.zero?("#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt") }
+      action :nothing
+    end
+
+    cookbook_file "#{node[:nginx][:dir]}/ssl/#{sitedomain}.crt" do
+      source "blank"
+      mode 0644
+      owner "root"
+      group "root"
+      action :create_if_missing
+    end
+    
+    cookbook_file "#{node[:nginx][:dir]}/ssl/#{sitedomain}.key" do
+      source "blank"
+      mode 0600
+      owner "root"
+      group "root"
+      action :create_if_missing
+      notifies :run, resources(:bash => "Create Self-Signed SSL Certificate"), :immediately
+    end
   end
 
   %w{backend}.each do |file|
@@ -56,7 +123,8 @@ define :magento_site do
         :http => node[:magento][:firewall][:http],
         :https => node[:magento][:firewall][:https],
         :path => "#{node[:magento][:dir]}",
-        :ssl => (site == "ssl")?true:false
+        :ssl => (site == "ssl")?true:false,
+        :sitedomain => sitedomain
       )
     end
     nginx_site "#{site}" do

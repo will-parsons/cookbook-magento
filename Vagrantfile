@@ -84,6 +84,7 @@ Vagrant.configure("2") do |config|
         :db => {
           :password => 'magepass'
         },
+        :hostname => 'mag-test.com'
       }
     }
 

@@ -7,12 +7,12 @@ server {
 <% if @ssl %>
   listen <%= @https %>;
   ssl on;
-  ssl_certificate ssl/magento.pem;
-  ssl_certificate_key ssl/magento.pem;
-  access_log  <%= node[:nginx][:log_dir] %>/magento-ssl.access.log;
+  ssl_certificate ssl/<%= @sitedomain %>.crt;
+  ssl_certificate_key ssl/<%= @sitedomain %>.key;
+  access_log  <%= node[:nginx][:log_dir] %>/<%= @sitedomain %>-ssl.access.log;
 <% else %>
   listen <%= @http %>;
-  access_log  <%= node[:nginx][:log_dir] %>/magento.access.log;
+  access_log  <%= node[:nginx][:log_dir] %>/<%= @sitedomain %>.access.log;
 <% end %>
 
   server_name  <%= node[:hostname] %>;
