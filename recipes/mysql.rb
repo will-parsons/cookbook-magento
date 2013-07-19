@@ -28,12 +28,6 @@ unless File.exists?(installed_file)
   # Install and configure MySQL
   magento_database
 
-  bash "Tweak #{my_cnf}/my.cnf file" do
-    cwd "#{my_cnf}"
-    code "sed -i 's/max_allowed_packet .*/max_allowed_packet = 32M/' my.cnf"
-    notifies :restart, resources(:service => "mysql")
-  end
-
   # Import Sample Data
   if node[:magento][:use_sample_data]
     include_recipe "mysql::client"

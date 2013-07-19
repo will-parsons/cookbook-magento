@@ -70,6 +70,7 @@ default[:magento][:db][:active] = '1'
 # Database settings
 default[:mysql][:bind_address] = "localhost"
 default[:mysql][:port] = "3306"
+default[:mysql][:tunable][:max_allowed_packet]   = "32M"
 
 # Magento Admin User
 default[:magento][:admin_user][:firstname] = 'Admin' # Required
