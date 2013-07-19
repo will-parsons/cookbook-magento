@@ -15,45 +15,119 @@
 # limitations under the License.
 #
 
-node.set_unless[:memcached][:listen] = "127.0.0.1"
+service "php-fpm"
 
-case node[:platform]
-when "ubuntu", "debian"
-  package "php5-memcache" do
-    action :install
-    notifies :restart, "service[php-fpm]"
+####### Session Caching #######
+node.set[:magento][:session][:save] = 'memcache'
+
+node.set[:memcached][:memory] = node[:magento][:memcached][:sessions][:memory]
+node.set[:memcached][:port] = node[:magento][:memcached][:sessions][:port]
+node.set[:memcached][:listen] = node[:magento][:memcached][:sessions][:listen]
+node.set[:memcached][:maxconn] = node[:magento][:memcached][:sessions][:maxconn]
+
+case node[:platform_family]
+when "rhel", "fedora"
+  include_recipe "yum::epel"
+  package "memcached"
+  package "libmemcached-devel"
+  
+  service "memcached" do
+    action :disable
+    notifies :stop, "service[memcached]", :immediately
   end
-when "centos", "fedora"
-  package "php-pecl-memcache" do
-    action :install
-    notifies :restart, "service[php-fpm]"
+
+  node.set[:memcache][:config_dir] = "/etc/sysconfig"
+  file "/etc/sysconfig/memcached" do
+    action :delete
+  end
+  file "/etc/init.d/memcached" do
+    action :delete
+  end
+  # Build init scripts
+  template "/etc/init.d/memcached_sessions" do
+    source "memcached-init.erb"
+    mode 0755
+    owner "root"
+    group "root"
+    variables(
+      :instance => "sessions",
+      :port => node[:magento][:memcached][:sessions][:port],
+      :user => node[:memcached][:user],
+      :maxconn => node[:magento][:memcached][:sessions][:maxconn],
+      :memory => node[:magento][:memcached][:sessions][:memory],
+      :listen => node[:magento][:memcached][:sessions][:listen]
+    )
+  end
+  template "/etc/init.d/memcached_backend" do
+    source "memcached-init.erb"
+    mode 0755
+    owner "root"
+    group "root"
+    variables(
+      :instance => "backend",
+      :port => node[:magento][:memcached][:slow_backend][:port],
+      :user => node[:memcached][:user],
+      :maxconn => node[:magento][:memcached][:slow_backend][:maxconn],
+      :memory => node[:magento][:memcached][:slow_backend][:memory],
+      :listen => node[:magento][:memcached][:slow_backend][:listen]
+    )
+  end
+else 
+  include_recipe "memcached"
+  node.set[:memcache][:config_dir] = "/etc"
+  file "/etc/memcached.conf" do
+    action :delete
+    notifies :restart, "service[memcached]"
   end
 end
 
-# Move session information to memcached
-node.set[:magento][:session][:save] = 'memcache'
-include_recipe "memcached"
-node.set_unless[:magento][:session][:save_path] = "tcp://#{node[:memcached][:listen]}:#{node[:memcached][:port]}?persistent=0&amp;weight=2&amp;timeout=10&amp;retry_interval=10"
-
-template "#{node[:magento][:dir]}/app/etc/local.xml" do
-  source "local.xml.erb"
-  mode "0600"
-  owner "#{node[:magento][:system_user]}"
+template "#{node[:memcache][:config_dir]}/memcached_sessions.conf" do
+  cookbook "memcached"
+  if platform_family?("rhel", "fedora")
+    source "memcached.sysconfig.redhat.erb"
+  else
+    source "memcached.conf.erb"
+  end
+  notifies :restart, "service[memcached]" unless platform_family?("rhel", "fedora")
   variables(
-    :db_host => node[:mysql][:bind_address],
-    :db_port => node[:mysql][:port],
-    :db_name => node[:magento][:db][:database],
-    :db_prefix => node[:magento][:db][:prefix],
-    :db_user => node[:magento][:db][:username],
-    :db_pass => node[:magento][:db][:password],
-    :db_init => node[:magento][:db][:initStatements],
-    :db_model => node[:magento][:db][:model],
-    :db_type => node[:magento][:db][:type],
-    :db_pdo => node[:magento][:db][:pdoType],
-    :db_active => node[:magento][:db][:active],
-    :enc_key => node[:magento][:encryption_key],
-    :session => node[:magento][:session],
-    :admin_path => node[:magento][:admin_frontname],
-    :inst_date => Time.new.rfc2822()
+    :memory => node[:memcached][:memory],
+    :port => node[:memcached][:port],
+    :user => node[:memcached][:user],
+    :listen => node[:memcached][:listen],
+    :maxconn => node[:memcached][:maxconn]
   )
+end
+
+if platform_family?("rhel", "fedora")
+  service "memcached_sessions" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
+end
+
+####### Slow Backend Caching #######
+
+template "#{node[:memcache][:config_dir]}/memcached_backend.conf" do
+  cookbook "memcached"
+  if platform_family?("rhel", "fedora")
+    source "memcached.sysconfig.redhat.erb"
+  else
+    source "memcached.conf.erb"
+  end
+  notifies :restart, "service[memcached]" unless platform_family?("rhel", "fedora")
+  variables(
+    :memory => node[:magento][:memcached][:slow_backend][:memory],
+    :port => node[:magento][:memcached][:slow_backend][:port],
+    :user => node[:memcached][:user],
+    :group => node[:memcached][:group],
+    :listen => node[:magento][:memcached][:slow_backend][:listen],
+    :maxconn => node[:magento][:memcached][:slow_backend][:maxconn] 
+  )
+end
+
+if platform_family?("rhel", "fedora")
+  service "memcached_backend" do
+    action [ :enable, :start ]
+    supports :status => true, :start => true, :stop => true, :restart => true
+  end
 end

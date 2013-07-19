@@ -26,6 +26,7 @@ define :magento_database do
     action :nothing
   end
 
+  # Initialize permissions and users
   template "/etc/mysql/mage-grants.sql" do
     path "/etc/mysql/mage-grants.sql"
     source "grants.sql.erb"
@@ -35,6 +36,8 @@ define :magento_database do
     variables(:database => node[:magento][:db])
     notifies :run, resources(:execute => "mysql-install-mage-privileges"), :immediately
   end
+  
+  #
 
   execute "create #{node[:magento][:db][:database]} database" do
     command "/usr/bin/mysqladmin -u root -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} create #{node[:magento][:db][:database]}"

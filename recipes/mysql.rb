@@ -1,0 +1,65 @@
+#
+# Cookbook Name:: magento
+# Recipe:: mysql
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+installed_file = "/root/.magento.mysql.installed"
+
+unless File.exists?(installed_file)
+
+  my_cnf =  if platform?('centos', 'redhat')
+                "/etc"
+              else
+                "/etc/mysql"
+              end
+
+  # Install and configure MySQL
+  magento_database
+
+  bash "Tweak #{my_cnf}/my.cnf file" do
+    cwd "#{my_cnf}"
+    code "sed -i 's/max_allowed_packet .*/max_allowed_packet = 32M/' my.cnf"
+    notifies :restart, resources(:service => "mysql")
+  end
+
+  # Import Sample Data
+  if node[:magento][:use_sample_data]
+    include_recipe "mysql::client"
+
+    remote_file "#{Chef::Config[:file_cache_path]}/magento-sample-data.tar.gz" do
+      source node[:magento][:sample_data_url]
+      mode "0644"
+    end
+
+    bash "magento-sample-data" do
+      cwd "#{Chef::Config[:file_cache_path]}"
+      code <<-EOH
+        mkdir #{name}
+        cd #{name}
+        tar --strip-components 1 -xzf #{Chef::Config[:file_cache_path]}/magento-sample-data.tar.gz
+        mv media/* #{node[:magento][:dir]}/media/
+  
+       mv magento_sample_data*.sql data.sql 2>/dev/null
+        /usr/bin/mysql -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -u #{node[:magento][:db][:username]} -p#{node[:magento][:db][:password]} #{node[:magento][:db][:database]} < data.sql
+        cd ..
+        rm -rf #{name}
+        EOH
+    end
+  end
+  bash "Touch #{installed_file} file" do
+    require 'time'
+    code "echo # File Created by Chef > #{installed_file} ; echo '#{Time.new.rfc2822()}' >> #{installed_file}"
+  end
+end

@@ -77,3 +77,27 @@ default[:magento][:admin_user][:lastname] = 'User' # Required
 default[:magento][:admin_user][:email] = 'admin@example.org' # Required
 default[:magento][:admin_user][:username] = 'MagentoAdmin' # Required
 default[:magento][:admin_user][:password] = 'magPass.123' # Required
+
+# Memcached Server Session Settings
+default[:magento][:memcached][:sessions][:memory] = 512
+default[:magento][:memcached][:sessions][:port] = 11211
+default[:magento][:memcached][:sessions][:maxconn] = 2048 
+default[:magento][:memcached][:sessions][:listen] = "127.0.0.1"
+
+# Memcached Server Slow Backend Settings
+default[:magento][:memcached][:slow_backend][:memory] = 1536
+default[:magento][:memcached][:slow_backend][:port] = 11212
+default[:magento][:memcached][:slow_backend][:maxconn] = 2048
+default[:magento][:memcached][:slow_backend][:listen] = "127.0.0.1"
+
+# Memcached Server, used for configuring client servers
+default[:magento][:memcached][:servers][:sessions][:servers] = "127.0.0.1"
+default[:magento][:memcached][:servers][:sessions][:server_port] = 11211
+
+default[:magento][:memcached][:servers][:slow_backend][:servers] = "127.0.0.1"
+default[:magento][:memcached][:servers][:slow_backend][:server_port] = 11212
+default[:magento][:memcached][:servers][:slow_backend][:persistent] = 1
+default[:magento][:memcached][:servers][:slow_backend][:weight] = 1
+default[:magento][:memcached][:servers][:slow_backend][:timeout] = 1
+default[:magento][:memcached][:servers][:slow_backend][:retry_interval] = 15
+default[:magento][:memcached][:servers][:slow_backend][:compression] = 0

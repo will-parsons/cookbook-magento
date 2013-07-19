@@ -4,5 +4,6 @@ DROP DATABASE test;
 DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
 
 GRANT ALL PRIVILEGES ON <%= @database[:database] %>.* TO '<%= @database[:username] %>'@'localhost' IDENTIFIED BY '<%= @database[:password] %>';
+GRANT ALL PRIVILEGES ON <%= @database[:database] %>.* TO '<%= @database[:username] %>'@'10.%' IDENTIFIED BY '<%= @database[:password] %>';
 
 FLUSH PRIVILEGES;

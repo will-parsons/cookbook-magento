@@ -1,0 +1,37 @@
+class Chef::Recipe::Magento
+
+
+  # Take a plain text password and hash it Magento style
+  def self.hash_password(password, salt) 
+    require 'digest/md5'
+    require 'securerandom'
+    salt = SecureRandom.uuid.gsub('-', '').byteslice(0..1) if !salt || salt.length < 2
+    return Digest::MD5.hexdigest(Digest::MD5.digest(salt + password)) + ":#{salt}"
+  end
+
+
+  # Take a value and return a string for use in SQL insert statements
+  def self.null_or_value(value)
+    return "NULL" if value.empty?
+    # Escape any single quotes to encure values returned do not not cause
+    # issues with the SQL insert statement
+    return "'#{value.gsub("'", "\\\\'")}'"
+  end
+
+
+  # Create magento encryption key mimicing how Magento does it
+  def self.magento_encryption_key 
+    require 'securerandom'
+    return SecureRandom.uuid.gsub('-', '')
+  end
+
+  # Determine if this node is the MySQL server based on IP
+  def self.db_is_local?(node)
+    return true if node['mysql']['bind_address'] == 'localhost' || node['mysql']['bind_address'] == '127.0.0.1'
+    node['network']['interface'].each do |iface|
+    node['network']['interface'][iface]['addresses'].each do |addr|
+        return true if addr[0] == node['mysql']['bind_address']
+      end
+    end
+  end
+end

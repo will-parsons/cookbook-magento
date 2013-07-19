@@ -24,7 +24,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   end
 
   unless node[:magento][:encryption_key]
-    node.set[:magento][:encryption_key] = magento_encryption_key()
+    node.set[:magento][:encryption_key] = Magento.magento_encryption_key
     unless Chef::Config[:solo] # Saving the key incase of failed Chef run
       ruby_block "save node data" do
         block do
@@ -84,7 +84,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     bash "Tweak CLI php.ini file" do
       cwd "/etc/php5/cli"
       code <<-EOH
-      sed -i 's/memory_limit = .*/memory_limit = 128M/' php.ini
+      sed -i 's/memory_limit = .*/memory_limit = 512M/' php.ini
       sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 32K/' php.ini
       sed -i 's/;realpath_cache_ttl = .*/realpath_cache_ttl = 7200/' php.ini
       EOH
@@ -101,7 +101,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   bash "Tweak FPM php.ini file" do
     cwd "#{php_conf[0]}" # php.ini location
     code <<-EOH
-    sed -i 's/memory_limit = .*/memory_limit = 128M/' php.ini
+    sed -i 's/memory_limit = .*/memory_limit = 512M/' php.ini
     sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 32K/' php.ini
     sed -i 's/;realpath_cache_ttl = .*/realpath_cache_ttl = 7200/' php.ini
     EOH
@@ -116,7 +116,11 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     recursive true
   end
 
+  # Install and configure nginx
   magento_site
+
+  # Install and configure varnish
+  include_recipe "magento::varnish"
 
   # Fetch magento release
   unless node[:magento][:download_url].empty?
@@ -132,11 +136,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
 
   # Setup Database
   # if Chef::Config[:solo]
-    db_config = {
-      :host => node['mysql']['bind_address'],
-      :port => node['mysql']['port']
-    }
-    db_user = node[:magento][:db]
   # else
     # FIXME: data bags search throwing 404 error: Net::HTTPServerException
     # db_config = search(:db_config, "id:master").first || { :host => 'localhost' }
@@ -144,36 +143,8 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     # enc_key = search(:magento, "id:enckey").first
   # end
 
-  admin_user = node[:magento][:admin_user]
-  if 'localhost' == db_config[:host] || '127.0.0.1' == db_config[:host]
-    # Install and configure MySQL
-    magento_database
-    
-  end
-
-  # Import Sample Data
-  if node[:magento][:use_sample_data]
-    include_recipe "mysql::client"
-
-    remote_file "#{Chef::Config[:file_cache_path]}/magento-sample-data.tar.gz" do
-      source node[:magento][:sample_data_url]
-      mode "0644"
-    end
-
-    bash "magento-sample-data" do
-      cwd "#{Chef::Config[:file_cache_path]}"
-      code <<-EOH
-        mkdir #{name}
-        cd #{name}
-        tar --strip-components 1 -xzf #{Chef::Config[:file_cache_path]}/magento-sample-data.tar.gz
-        mv media/* #{node[:magento][:dir]}/media/
-
-        mv magento_sample_data*.sql data.sql 2>/dev/null
-        /usr/bin/mysql -h #{db_config[:host]} -P #{db_config[:port]} -u #{db_user[:username]} -p#{db_user[:password]} #{db_user[:database]} < data.sql
-        cd ..
-        rm -rf #{name}
-        EOH
-    end
+  if Magento.db_is_local?(node)
+    include_recipe "magento::mysql"
   end
 
   bash "Ensure correct permissions & ownership" do
