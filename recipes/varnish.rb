@@ -20,12 +20,15 @@ when "rhel", "fedora"
   # CentOS installs v2.1 by default, installing 3.0 from EPEL
   execute "Install varnish-release" do
     not_if "rpm -qa | grep -qx 'varnish-release-3.0-1'"
-    command "rpm -Uvh --nosignature --replacepkgs http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release-3.0-1.noarch.rpm"
+    command <<-EOH
+    rpm -Uvh --nosignature --replacepkgs http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release-3.0-1.noarch.rpm
+    EOH
     action :run
   end
 
   package "varnish" do
-    action :upgrade
+    version "3.0.4-1.el5.centos"
+    action :install
   end
   service "varnish" do
     action [:enable, :start]

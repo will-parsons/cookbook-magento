@@ -75,7 +75,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   # Install required packages
   node[:magento][:packages].each do |package|
     package "#{package}" do
-      action :upgrade
+      action :install
     end
   end
 

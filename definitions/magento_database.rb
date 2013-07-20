@@ -4,7 +4,7 @@ define :magento_database do
 
   # necessary for mysql gem installation
   package "make" do
-    action :upgrade
+    action :install
   end
 
   case node[:platform_family]
