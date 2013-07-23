@@ -17,22 +17,44 @@
 
 case node["platform_family"]
 when "rhel", "fedora"
-  # CentOS installs v2.1 by default, installing 3.0 from EPEL
+  # CentOS installs v2.1 by default, installing 3.0
+  execute 'reload-external-yum-cache' do
+    command 'yum makecache'
+    action :nothing
+  end
+ 
+  ruby_block "reload-internal-yum-cache" do
+    block do
+      Chef::Provider::Package::Yum::YumCache.instance.reload
+    end
+    action :nothing
+  end
+
   execute "Install varnish-release" do
     not_if "rpm -qa | grep -qx 'varnish-release-3.0-1'"
-    command <<-EOH
-    rpm -Uvh --nosignature --replacepkgs http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release-3.0-1.noarch.rpm
-    EOH
+    command "rpm -Uvh --nosignature --replacepkgs http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release-3.0-1.noarch.rpm"
     action :run
+    notifies :run, resources(:execute => 'reload-external-yum-cache'), :immediately
+    notifies :create, resources(:ruby_block => 'reload-internal-yum-cache'), :immediately
   end
 
   package "varnish" do
-    version "3.0.4-1.el5.centos"
     action :install
   end
+  
   service "varnish" do
     action [:enable, :start]
   end
+
+  execute "Change Varnish listen port to 80" do
+    command "sed -i 's/^VARNISH_LISTEN_PORT=.*/VARNISH_LISTEN_PORT=#{node[:magento][:firewall][:http]}/' /etc/sysconfig/varnish"
+    action :run
+    notifies :restart, "service[varnish]"
+  end
+
 else
   include_recipe "varnish"
 end
+
+# Setup Mage and install default Varnish template
+magento_mage

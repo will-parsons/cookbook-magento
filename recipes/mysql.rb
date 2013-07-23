@@ -18,6 +18,7 @@
 installed_file = "/root/.magento.mysql.installed"
 
 unless File.exists?(installed_file)
+  include_recipe "mysql::ruby"
 
   my_cnf =  if platform?('centos', 'redhat')
                 "/etc"

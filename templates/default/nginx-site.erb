@@ -11,7 +11,8 @@ server {
   ssl_certificate_key ssl/<%= @sitedomain %>.key;
   access_log  <%= node[:nginx][:log_dir] %>/<%= @sitedomain %>-ssl.access.log;
 <% else %>
-  listen <%= @http %>;
+  <% if node[:magento][:varnish][:use_varnish] %><%= "listen #{node[:magento][:varnish][:backend_http]}" %>
+  <% else %><%= "listen #{@http}" %><% end %>;
   access_log  <%= node[:nginx][:log_dir] %>/<%= @sitedomain %>.access.log;
 <% end %>
 

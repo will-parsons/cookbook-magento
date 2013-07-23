@@ -7,10 +7,10 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   case node["platform_family"]
   when "rhel", "fedora"
     include_recipe "yum"
-    include_recipe "mysql::ruby"
   else
     include_recipe "apt"
   end
+  include_recipe "mysql::ruby"
 
   if node.has_key?("ec2")
     server_fqdn = node.ec2.public_hostname
@@ -119,9 +119,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   # Install and configure nginx
   magento_site
 
-  # Install and configure varnish
-  include_recipe "magento::varnish"
-
   # Fetch magento release
   unless node[:magento][:download_url].empty?
     remote_file "#{Chef::Config[:file_cache_path]}/magento.tar.gz" do
@@ -157,6 +154,9 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   end
 
   magento_initial_configuration
+
+  # Install and configure varnish
+  include_recipe "magento::varnish" if node[:magento][:varnish][:use_varnish]
 
   execute "Index Everything" do
     cwd node[:magento][:dir]

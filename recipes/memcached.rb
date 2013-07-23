@@ -27,7 +27,7 @@ node.set[:memcached][:maxconn] = node[:magento][:memcached][:sessions][:maxconn]
 
 case node[:platform_family]
 when "rhel", "fedora"
-  include_recipe "yum::epel"
+  
   package "memcached"
   package "libmemcached-devel"
   
