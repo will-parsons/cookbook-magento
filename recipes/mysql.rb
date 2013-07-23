@@ -18,6 +18,14 @@
 installed_file = "/root/.magento.mysql.installed"
 
 unless File.exists?(installed_file)
+
+  case node["platform_family"]
+  when "rhel", "fedora"
+    include_recipe "yum"
+  else
+    include_recipe "apt"
+  end
+
   include_recipe "mysql::ruby"
 
   my_cnf =  if platform?('centos', 'redhat')
