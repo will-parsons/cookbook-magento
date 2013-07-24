@@ -26,7 +26,7 @@ define :magento_database do
   include_recipe "mysql::server"
 
   execute "mysql-install-mage-privileges" do
-    command "/usr/bin/mysql -u root -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /etc/mysql/mage-grants.sql"
+    command "/usr/bin/mysql -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /etc/mysql/mage-grants.sql"
     action :nothing
   end
 
@@ -44,7 +44,7 @@ define :magento_database do
   #
 
   execute "create #{node[:magento][:db][:database]} database" do
-    command "/usr/bin/mysqladmin -u root -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} create #{node[:magento][:db][:database]}"
+    command "/usr/bin/mysqladmin -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} create #{node[:magento][:db][:database]}"
     not_if do
       require 'rubygems'
       Gem.clear_paths
