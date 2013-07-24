@@ -18,8 +18,8 @@
 case node["platform_family"]
 when "rhel", "fedora"
   fwfile = "/etc/sysconfig/iptables"
-  %w{ http https }.each do |port|
-    rule = "-I INPUT -p tcp -m tcp --dport #{node[:magento][:firewall][port]} -j ACCEPT"
+  %w{ node[:magento][:memcached][:slow_backend][:port] node[:magento][:memcached][:sessions][:port]}.each do |port|
+    rule = "-I INPUT -p tcp -m tcp --dport #{port} -j ACCEPT"
     execute "Adding iptables rule for #{port}" do
       command "iptables #{rule}"
       not_if "grep \"\\#{rule}\" #{fwfile}"
@@ -32,17 +32,12 @@ when "rhel", "fedora"
 else
   include_recipe "firewall"
 
-  firewall_rule "http" do
-    port node['magento']['firewall']['http']
-    protocol :tcp
-    interface node['magento']['firewall']['interface']
-    action :allow
-  end
-
-  firewall_rule "https" do
-    port node['magento']['firewall']['https']
-    protocol :tcp
-    interface node['magento']['firewall']['interface']
-    action :allow
+  %w{ slow_backend sessions }.each do |port|
+    firewall_rule "memcached-#{port}" do
+      port node[:magento][:memcached][port][:port] 
+      protocol :tcp
+      interface node[:magento][:memcached][port][:interface]
+      action :allow
+    end
   end
 end
