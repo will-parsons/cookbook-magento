@@ -75,6 +75,11 @@ when "rhel", "fedora"
 else 
   include_recipe "memcached"
   node.set[:memcache][:config_dir] = "/etc"
+
+  service "memcached" do
+    action :stop, "service[memcached]", :immediately
+  end
+
   file "/etc/memcached.conf" do
     action :delete
     notifies :restart, "service[memcached]"

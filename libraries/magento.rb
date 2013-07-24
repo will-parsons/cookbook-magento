@@ -28,8 +28,8 @@ class Chef::Recipe::Magento
   # Determine if this node is the MySQL server based on IP
   def self.db_is_local?(node)
     return true if node['mysql']['bind_address'] == 'localhost' || node['mysql']['bind_address'] == '127.0.0.1'
-    node['network']['interface'].each do |iface|
-    node['network']['interface'][iface]['addresses'].each do |addr|
+    node['network']['interfaces'].each do |iface|
+      node['network']['interfaces'][iface[0]]['addresses'].each do |addr|
         return true if addr[0] == node['mysql']['bind_address']
       end
     end
