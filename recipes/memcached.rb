@@ -77,12 +77,11 @@ else
   node.set[:memcache][:config_dir] = "/etc"
 
   service "memcached" do
-    action :stop, "service[memcached]", :immediately
+    action :stop
   end
 
   file "/etc/memcached.conf" do
     action :delete
-    notifies :restart, "service[memcached]"
   end
 end
 
