@@ -35,7 +35,6 @@ else
   %w{ slow_backend sessions }.each do |port|
     firewall_rule "memcached-#{port}" do
       port node[:magento][:memcached][port][:port] 
-      protocol :tcp
       interface node[:magento][:memcached][port][:interface]
       action :allow
     end
