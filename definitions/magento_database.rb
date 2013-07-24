@@ -49,7 +49,7 @@ define :magento_database do
       require 'rubygems'
       Gem.clear_paths
       require 'mysql'
-      m = Mysql.new(node[:mysql][:bind_address], "root", node[:mysql][:server_root_password], "mysql", node[:mysql][:port].to_i)
+      m = Mysql.new("localhost", "root", node[:mysql][:server_root_password], "mysql", node[:mysql][:port].to_i)
       m.list_dbs.include?(node[:magento][:db][:database])
     end
   end
