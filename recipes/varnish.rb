@@ -54,6 +54,16 @@ when "rhel", "fedora"
 
 else
   include_recipe "varnish"
+  
+  service "varnish" do
+    action [:enable, :start]
+  end
+
+  execute "Change Varnish listen port to 80" do
+    command "sed -i 's/^DAEMON_OPTS=\"-a :6081/DAEMON_OPTS=\"-a :80/' /etc/default/varnish"
+    action :run
+    notifies :restart, "service[varnish]"
+  end
 end
 
 # Setup Mage and install default Varnish template

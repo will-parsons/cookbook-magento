@@ -35,14 +35,12 @@ else
   firewall_rule "http" do
     port node['magento']['firewall']['http']
     protocol :tcp
-    interface node['magento']['firewall']['interface']
     action :allow
   end
 
   firewall_rule "https" do
     port node['magento']['firewall']['https']
     protocol :tcp
-    interface node['magento']['firewall']['interface']
     action :allow
   end
 end
