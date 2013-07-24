@@ -153,7 +153,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     EOH
   end
 
-  magento_initial_configuration
+  magento_initial_configuration unless File.exist?("#{node[:magento][:dir]}/app/etc/local.xml")
 
   # Install and configure varnish
   include_recipe "magento::varnish" if node[:magento][:varnish][:use_varnish]
