@@ -33,5 +33,6 @@ class Chef::Recipe::Magento
         return true if addr[0] == node['mysql']['bind_address']
       end
     end
+    return false
   end
 end
