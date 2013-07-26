@@ -35,4 +35,18 @@ class Chef::Recipe::Magento
     end
     return false
   end
+
+  # Determine if database exists
+  def self.tables_exist?(host, username, password, database)
+    begin
+      require 'mysql'
+      m = Mysql.new(host, username, password, database)
+      t = m.list_tables
+      return false if t.empty?
+      return true
+    rescue Exception => e
+      return false
+    end
+  end
+
 end

@@ -145,6 +145,13 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     include_recipe "magento::mysql"
   end
 
+  db = node[:magento][:db]
+  mysql = node[:mysql]
+
+  if !File.exist?("#{node[:magento][:dir]}/app/etc/local.xml") && !Magento.tables_exist?(mysql[:bind_address], db[:username], db[:password], mysql[:port]) 
+    magento_initial_configuration
+  end
+
   bash "Ensure correct permissions & ownership" do
     cwd node[:magento][:dir]
     code <<-EOH
@@ -153,8 +160,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     chmod -R o+w var
     EOH
   end
-
-  magento_initial_configuration unless File.exist?("#{node[:magento][:dir]}/app/etc/local.xml")
 
   # Install and configure varnish
   include_recipe "magento::varnish" if node[:magento][:varnish][:use_varnish]
