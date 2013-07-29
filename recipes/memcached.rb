@@ -25,6 +25,13 @@ node.set[:memcached][:port] = node[:magento][:memcached][:sessions][:port]
 node.set[:memcached][:listen] = node[:magento][:memcached][:sessions][:listen]
 node.set[:memcached][:maxconn] = node[:magento][:memcached][:sessions][:maxconn]
 
+deployment = search(node["deployment"]["id"], "id:webapp_magento")
+
+deployment.each do |app|
+  app = Chef::EncryptedDataBagItem.load(node["deployment"]["id"], app['id'])
+  node.set_unless['magento']['memcached']['clients'] = app['magento']['memcached']['clients'] rescue node['magento']['memcached']['clients']
+end
+
 case node[:platform_family]
 when "rhel", "fedora"
   

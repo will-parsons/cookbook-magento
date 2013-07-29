@@ -18,11 +18,14 @@
 case node["platform_family"]
 when "rhel", "fedora"
   fwfile = "/etc/sysconfig/iptables"
-  %w{ node[:magento][:memcached][:slow_backend][:port] node[:magento][:memcached][:sessions][:port]}.each do |port|
-    rule = "-I INPUT -p tcp -m tcp --dport #{port} -j ACCEPT"
-    execute "Adding iptables rule for #{port}" do
-      command "iptables #{rule}"
-      not_if "grep \"\\#{rule}\" #{fwfile}"
+
+  node[:magento][:memcached][:clients].each do |ip|
+    %w{ node[:magento][:memcached][:slow_backend][:port] node[:magento][:memcached][:sessions][:port]}.each do |port|
+      rule = "-I INPUT -s #{ip} -p tcp -m tcp --dport #{port} -j ACCEPT"
+      execute "Adding iptables rule for #{port}" do
+        command "iptables #{rule}"
+        not_if "grep \"\\#{rule}\" #{fwfile}"
+      end
     end
   end
   # Save iptables rules
@@ -32,11 +35,14 @@ when "rhel", "fedora"
 else
   include_recipe "firewall"
 
-  %w{ slow_backend sessions }.each do |port|
-    firewall_rule "memcached-#{port}" do
-      port node[:magento][:memcached][port][:port] 
-      interface node[:magento][:memcached][port][:interface]
-      action :allow
+  node[:magento][:memcached][:clients].each do |ip|
+    %w{ slow_backend sessions }.each do |port|
+      firewall_rule "memcached-#{port}" do
+        port node[:magento][:memcached][port][:port]
+        source ip
+        interface node[:magento][:memcached][port][:interface]
+        action :allow
+      end
     end
   end
 end

@@ -86,6 +86,7 @@ default[:magento][:memcached][:sessions][:port] = 11211
 default[:magento][:memcached][:sessions][:maxconn] = 2048 
 default[:magento][:memcached][:sessions][:listen] = "127.0.0.1"
 default[:magento][:memcached][:sessions][:interface] = "eth1"
+default[:magento][:memcached][:clients] = []
 
 # Memcached Server Slow Backend Settings
 default[:magento][:memcached][:slow_backend][:memory] = 1536
