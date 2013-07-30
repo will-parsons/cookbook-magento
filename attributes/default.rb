@@ -110,3 +110,5 @@ default[:magento][:memcached][:servers][:slow_backend][:compression] = 0
 # Varnish config
 default[:magento][:varnish][:use_varnish] = true
 default[:magento][:varnish][:backend_http] = 8080
+
+default[:magento][:testvalue] = ""

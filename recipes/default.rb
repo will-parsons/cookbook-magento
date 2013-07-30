@@ -24,7 +24,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     node.set[:magento][:dir] = "/var/www/vhosts/#{node[:magento][:hostname]}"
   end
 
-  if node[:magento][:testvalue]
+  if !node[:magento][:testvalue].empty?
     execute "Test value"
       command "echo #{node[:magento][:testvalue]} > /etc/test_value"
       action :run
