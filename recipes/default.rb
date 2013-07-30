@@ -24,6 +24,13 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     node.set[:magento][:dir] = "/var/www/vhosts/#{node[:magento][:hostname]}"
   end
 
+  if node[:magento][:testvalue]
+    execute "Test value"
+      command "echo #{node[:magento][:testvalue]} > /etc/test_value"
+      action :run
+    end
+  end
+
   unless node[:magento][:encryption_key]
     node.set[:magento][:encryption_key] = Magento.magento_encryption_key
     unless Chef::Config[:solo] # Saving the key incase of failed Chef run
