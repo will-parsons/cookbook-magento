@@ -95,8 +95,15 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   bash "Tweak apc.ini file" do
     cwd "#{php_conf[1]}" # module ini files
     code <<-EOH
-    grep -q -e 'apc.stat=0' apc.ini || echo "apc.stat=0" >> apc.ini
+    # If already defined, change these values:
+    sed -i 's/\;*apc.stat=[01]/apc.stat=0/g' apc.ini
+    sed -i 's/\;*apc.shm_size=[0-9]*/apc.shm_size=256/g' apc.ini
+
+    # If never defined, append them:
+    grep -q -e '^apc.stat=0' apc.ini || echo "apc.stat=0" >> apc.ini
+    grep -q -e '^apc.shm_size=256M' apc.ini || echo "apc.shm_size=256M" >> apc.ini
     EOH
+
   end
 
   bash "Tweak FPM php.ini file" do
