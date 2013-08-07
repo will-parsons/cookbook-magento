@@ -21,7 +21,7 @@ INSTANCE=<%= node[:hostname] %>
 
 # Pass the Daemon options
 
-DAEMON_OPTS="-a :80 \
+DAEMON_OPTS="-a :<%= #{node[:magento][:firewall][:http]} %> \
               -f /etc/varnish/default.vcl \
               -T 127.0.0.1:6082 \
               -u varnish -g varnish \
