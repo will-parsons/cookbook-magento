@@ -45,12 +45,15 @@ when "rhel", "fedora"
   service "varnish" do
     action [:enable, :start]
   end
-
-  execute "Change Varnish listen port to 80" do
-    command "sed -i 's/^VARNISH_LISTEN_PORT=.*/VARNISH_LISTEN_PORT=#{node[:magento][:firewall][:http]}/' /etc/sysconfig/varnish"
-    action :run
+  
+  template "/etc/sysconfig/varnish" do
+    source "varnish.erb"
+    owner "root"
+    group "root"
+    mode "0644"
     notifies :restart, "service[varnish]"
   end
+
 
 else
   include_recipe "varnish"
@@ -59,11 +62,14 @@ else
     action [:enable, :start]
   end
 
-  execute "Change Varnish listen port to 80" do
-    command "sed -i 's/^DAEMON_OPTS=\"-a :6081/DAEMON_OPTS=\"-a :80/' /etc/default/varnish"
-    action :run
+  template "/etc/default/varnish" do
+    source "varnish.erb"
+    owner "root"
+    group "root"
+    mode "0644"
     notifies :restart, "service[varnish]"
   end
+
 end
 
 # Setup Mage and install default Varnish template
