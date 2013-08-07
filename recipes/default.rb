@@ -86,7 +86,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
       cwd "/etc/php5/cli"
       code <<-EOH
       sed -i 's/memory_limit = .*/memory_limit = 512M/' php.ini
-      sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 32K/' php.ini
+      sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 256K/' php.ini
       sed -i 's/;realpath_cache_ttl = .*/realpath_cache_ttl = 7200/' php.ini
       EOH
     end
@@ -103,7 +103,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     cwd "#{php_conf[0]}" # php.ini location
     code <<-EOH
     sed -i 's/memory_limit = .*/memory_limit = 512M/' php.ini
-    sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 32K/' php.ini
+    sed -i 's/;realpath_cache_size = .*/realpath_cache_size = 256K/' php.ini
     sed -i 's/;realpath_cache_ttl = .*/realpath_cache_ttl = 7200/' php.ini
     EOH
     notifies :restart, resources(:service => "php-fpm")
