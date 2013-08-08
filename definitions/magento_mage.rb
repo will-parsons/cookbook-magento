@@ -31,5 +31,28 @@ define :magento_mage do
     command "cp -f #{node[:magento][:dir]}/app/code/community/Phoenix/VarnishCache/etc/default_3.0.vcl /etc/varnish/default.vcl"
     notifies :restart, "service[varnish]"
   end
+  
+    execute "Allow Varnish PURGE from ServiceNet" do
+    user "root"
+    command "sed -i 's/^acl purge \{/acl purge \{\\n  \"10.0.0.0\"\\\/8;/g' /etc/varnish/default.vcl"
+    notifies :restart, "service[varnish]"
+  end
+
+  # Configuration for PageCache module to be enabled
+  execute "pagecache-database-inserts" do
+    command "/usr/bin/mysql #{node[:magento][:db][:database]} -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < #{node[:magento][:dir]}/pagecache_inserts.sql"
+    action :nothing
+  end
+
+  template "#{node[:magento][:dir]}/pagecache_inserts.sql" do
+    source "pagecache.sql.erb"
+    mode "0644"
+    owner "#{node[:magento][:system_user]}"
+    variables(
+      :varnishservers => "localhost"
+    )
+    notifies :run, resources(:execute => "pagecache-database-inserts"), :immediately
+  end
+
 
 end
