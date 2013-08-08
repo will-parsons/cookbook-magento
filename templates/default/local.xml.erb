@@ -38,9 +38,6 @@
     <% end %>
     <cache>
       <backend>memcached</backend>
-      <slow_backend>database</slow_backend>
-      <slow_backend_store_data><![CDATA[0]]></slow_backend_store_data>
-      <auto_refresh_fast_cache><![CDATA[0]]></auto_refresh_fast_cache>
       <memcached>
         <servers>
           <server>
@@ -58,6 +55,20 @@
         <hashed_directory_umask><![CDATA[]]></hashed_directory_umask>
         <file_name_prefix><![CDATA[<%= @db_prefix %>]]></file_name_prefix>
       </memcached>
+      
+      <!-- Break/disable 2nd level of caching (and prevent tag storage), for performance,
+      with the caveat you cannot flush caches independently -->
+      <slow_backend>Memcached</slow_backend>
+      <slow_backend_options>
+        <servers>
+          <server>
+            <host>0.0.0.0</host>
+            <port>0</port>
+            <persistent>0</persistent>
+          </server>
+        </servers>
+      </slow_backend_options>
+
     </cache>
   </global>
   <admin>
