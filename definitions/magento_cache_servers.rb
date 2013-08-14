@@ -14,13 +14,13 @@ define :magento_cache_servers do
 
     # Configuration for PageCache module to be enabled
     execute "pagecache-database-update" do
-      command "/usr/bin/mysql #{node[:magento][:db][:database]} -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /root/pagecache_updates.sql"
+      command "/usr/bin/mysql #{node[:magento][:db][:database]} -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /root/pagecache_update.sql"
       action :nothing
     end
 
     # Initializes the page cache configuration
-    template "/root/pagecache_updates.sql" do
-      source "pagecache_updates.sql.erb"
+    template "/root/pagecache_update.sql" do
+      source "pagecache_update.sql.erb"
       mode "0644"
       owner "root"
       variables(
