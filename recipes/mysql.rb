@@ -37,6 +37,9 @@ unless File.exists?(installed_file)
   # Install and configure MySQL
   magento_database
 
+  # Initialize page cache, set client as localhost, should be run on DB host
+  magento_pagecache
+
   # Import Sample Data
   if node[:magento][:use_sample_data]
     include_recipe "mysql::client"
@@ -66,3 +69,12 @@ unless File.exists?(installed_file)
     code "echo # File Created by Chef > #{installed_file} ; echo '#{Time.new.rfc2822()}' >> #{installed_file}"
   end
 end
+
+# Initialize page cache, set client as localhost, should be run on DB host
+# Requires that the database is already configured and that Mage has already been installed
+
+# Initialize Page Cache
+magento_pagecache
+
+# Add cache servers included in node[:magento][:pagecache][:servers]
+magento_cache_servers

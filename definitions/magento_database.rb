@@ -40,8 +40,6 @@ define :magento_database do
     variables(:database => node[:magento][:db])
     notifies :run, resources(:execute => "mysql-install-mage-privileges"), :immediately
   end
-  
-  #
 
   execute "create #{node[:magento][:db][:database]} database" do
     command "/usr/bin/mysqladmin -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} create #{node[:magento][:db][:database]}"

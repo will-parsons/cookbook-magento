@@ -2,7 +2,8 @@ class Chef::Recipe::Magento
 
 
   # Take a plain text password and hash it Magento style
-  def self.hash_password(password, salt) 
+  def self.hash_password(password, salt)
+    require 'rubygems'
     require 'digest/md5'
     require 'securerandom'
     salt = SecureRandom.uuid.gsub('-', '').byteslice(0..1) if !salt || salt.length < 2
@@ -21,6 +22,7 @@ class Chef::Recipe::Magento
 
   # Create magento encryption key mimicing how Magento does it
   def self.magento_encryption_key 
+    require 'rubygems'
     require 'securerandom'
     return SecureRandom.uuid.gsub('-', '')
   end
@@ -36,14 +38,37 @@ class Chef::Recipe::Magento
     return false
   end
 
-  # Determine if database exists
+  # Determine if tables exist for specific database
   def self.tables_exist?(host, username, password, database)
     begin
+      require 'rubygems'
       require 'mysql'
       m = Mysql.new(host, username, password, database)
       t = m.list_tables
       return false if t.empty?
       return true
+    rescue Exception => e
+      return false
+    end
+  end
+
+  # Determine if we can perform the initial configuration of pagecache on the database
+  def self.ready_for_pagecache?(host, username, password, database)
+    begin
+      require 'rubygems'
+      require 'mysql'
+      m = Mysql.new(host, username, password, database)
+      t = m.list_tables
+      if t.include?("core_config_data")
+        r = m.query "select * from core_config_data where path='varnishcache/general/servers'"
+        if r.num_rows == 0
+          return true
+        else
+          return false
+        end
+      else
+        return false
+      end
     rescue Exception => e
       return false
     end

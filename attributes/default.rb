@@ -21,7 +21,7 @@ default[:magento][:default_currency] = "USD"
 default[:magento][:admin_frontname] = "admin"
 default[:magento][:url] = "http://example.com/"
 default[:magento][:use_rewrites] = "yes"
-default[:magento][:use_secure] = "yes"
+default[:magento][:use_secure] = "no"
 default[:magento][:secure_base_url] = "https://example.com/"
 default[:magento][:use_secure_admin] = "yes"
 default[:magento][:enable_charts] = "yes"
@@ -112,3 +112,5 @@ default[:magento][:varnish][:use_varnish] = true
 default[:magento][:varnish][:backend_http] = 8080
 default[:magento][:varnish][:memory] = "#{(node['memory']['total'].to_i / 4) / (1024)}M"
 
+# Page cache servers
+default[:magento][:pagecache][:servers] = []
