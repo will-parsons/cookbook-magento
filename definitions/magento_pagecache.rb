@@ -1,7 +1,7 @@
 define :magento_pagecache do
 
   # This must be done AFTER Magento has been configured
-  if Chef::Recipe::Magento.tables_exist?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port]) && Chef::Recipe::Magento.ready_for_pagecache?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port])
+  if Chef::Recipe::Magento.tables_exist?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port]) && Chef::Recipe::Magento.ready_for_pagecache?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port], "install")
 
     # Configuration for PageCache module to be enabled
     execute "pagecache-database-inserts" do
