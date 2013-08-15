@@ -51,3 +51,5 @@ class Chef::Recipe::Magento
       return false
     end
   end
+
+end
