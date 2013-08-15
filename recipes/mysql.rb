@@ -67,8 +67,5 @@ unless File.exists?(installed_file)
   end
 end
 
-# Initialize Page Cache
-magento_pagecache
-
 # Add cache servers included in node[:magento][:pagecache][:servers]
 magento_cache_servers

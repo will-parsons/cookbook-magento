@@ -5,7 +5,7 @@ define :magento_pagecache do
 
     # Configuration for PageCache module to be enabled
     execute "pagecache-database-inserts" do
-      command "/usr/bin/mysql #{node[:magento][:db][:database]} -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /root/pagecache_inserts.sql"
+      command "/usr/bin/mysql #{node[:magento][:db][:database]} -u #{node[:magento][:db][:username]} -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -p#{node[:magento][:db][:password]} < /root/pagecache_inserts.sql"
       action :nothing
     end
 

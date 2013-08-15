@@ -178,24 +178,8 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     command "php -f shell/indexer.php reindexall"
   end
 
-  if Magento.db_is_local?(node)
-    # Configuration for PageCache module to be enabled
-    execute "pagecache-local-database-inserts" do
-      command "/usr/bin/mysql #{node[:magento][:db][:database]} -u root -h localhost -P #{node[:mysql][:port]} -p#{node[:mysql][:server_root_password]} < /root/pagecache_local_inserts.sql"
-      action :nothing
-    end
-
-    # Initializes the page cache configuration
-    template "/root/pagecache_local_inserts.sql" do
-      source "pagecache.sql.erb"
-      mode "0644"
-      owner "root"
-      variables(
-        :varnishservers => "localhost"
-      )
-      notifies :run, resources(:execute => "pagecache-local-database-inserts"), :immediately
-    end
-  end
+  # Initialize Page Cache
+  magento_pagecache
 
   bash "Touch .installed flag" do
     cwd node[:magento][:dir]
