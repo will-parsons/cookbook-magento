@@ -22,6 +22,7 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     node.set[:magento][:url] = "http://#{node[:magento][:hostname]}/"
     node.set[:magento][:secure_base_url] = "https://#{node[:magento][:hostname]}/"
     node.set[:magento][:dir] = "/var/www/vhosts/#{node[:magento][:hostname]}"
+    node.set[:lsyncd][:exclusions] = ["#{node[:magento][:dir]}/var", "#{node[:magento][:dir]}/media"]
   end
 
   unless node[:magento][:encryption_key]
