@@ -32,4 +32,21 @@ define :magento_initial_configuration do
     --skip_url_validation
     EOH
   end
+
+  # Configuration for PageCache module to be enabled
+  execute "pagecache-database-inserts" do
+    command "/usr/bin/mysql #{node[:magento][:db][:database]} -u #{node[:magento][:db][:username]} -h #{node[:mysql][:bind_address]} -P #{node[:mysql][:port]} -p#{node[:magento][:db][:password]} < /root/pagecache_inserts.sql"
+    action :nothing
+  end
+
+  # Initializes the page cache configuration
+  template "/root/pagecache_inserts.sql" do
+    source "pagecache.sql.erb"
+    mode "0644"
+    owner "root"
+    variables(
+      :varnishservers => "localhost"
+    )
+    notifies :run, resources(:execute => "pagecache-database-inserts"), :immediately
+  end
 end

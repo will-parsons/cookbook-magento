@@ -178,9 +178,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
     command "php -f shell/indexer.php reindexall"
   end
 
-  # Initialize Page Cache
-  magento_pagecache
-
   bash "Touch .installed flag" do
     cwd node[:magento][:dir]
     code <<-EOH
