@@ -51,29 +51,3 @@ class Chef::Recipe::Magento
       return false
     end
   end
-
-  # Determine if we can perform the initial configuration of pagecache on the database
-  def self.ready_for_pagecache?(host, username, password, database, operation)
-    begin
-      require 'rubygems'
-      require 'mysql'
-      m = Mysql.new(host, username, password, database)
-      t = m.list_tables
-      if t.include?("core_config_data")
-        r = m.query "select * from core_config_data where path='varnishcache/general/servers'"
-        if r.num_rows == 0 && operation == "install"
-          return true
-        elsif r.num_rows == 1 && operation == "update"
-          return true
-        else
-          return false
-        end
-      else
-        return false
-      end
-    rescue Exception => e
-      return false
-    end
-  end
-
-end

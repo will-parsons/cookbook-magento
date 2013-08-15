@@ -1,11 +1,13 @@
 define :magento_cache_servers do
 
   # Set page cache servers
-  if !node[:magento][:pagecache][:servers].empty? && Chef::Recipe::Magento.ready_for_pagecache?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port], "update")
+  if !node[:magento][:pagecache][:servers].empty? && Chef::Recipe::Magento.tables_exist?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:mysql][:port])
     cache_servers = String.new
 
-    node[:magento][:pagecache][:servers].each do |ip|
-      if cache_servers.empty?
+    page_servers = node[:magento][:pagecache][:servers].uniq
+
+    page_servers.each do |ip|
+      if cache_servers.empty? || 
         cache_servers = ip
       else
         cache_servers = cache_servers + ";#{ip}"
