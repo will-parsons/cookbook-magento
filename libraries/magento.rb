@@ -52,4 +52,14 @@ class Chef::Recipe::Magento
     end
   end
 
+  def self.reindex_all(path)
+    begin
+      system("php -f #{path} reindexall")
+    rescue Exception => e
+      # If this cache building fails, it's not fatal
+      # This is in place since you cannot easily do this within a recipe
+      return true 
+    end
+  end
+
 end

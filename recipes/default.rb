@@ -156,15 +156,6 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   db = node[:magento][:db]
   mysql = node[:mysql]
 
-  bash "Ensure correct permissions & ownership" do
-    cwd node[:magento][:dir]
-    code <<-EOH
-    chown -R #{user}:#{group} #{node[:magento][:dir]}
-    chmod -R o+w media
-    chmod -R o+w var
-    EOH
-  end
-
   if !File.exist?("#{node[:magento][:dir]}/app/etc/local.xml") && !Magento.tables_exist?(mysql[:bind_address], db[:username], db[:password], mysql[:port])
     magento_initial_configuration
   end
@@ -172,11 +163,16 @@ unless File.exist?("#{node[:magento][:dir]}/.installed")
   # Install and configure varnish
   include_recipe "magento::varnish" if node[:magento][:varnish][:use_varnish]
 
-  execute "Index Everything" do
+  # Index everything
+  Magento.reindex_all("#{node[:magento][:dir]}/shell/indexer.php")
+
+  bash "Ensure correct permissions & ownership" do
     cwd node[:magento][:dir]
-    user user
-    action :run
-    command "php -f shell/indexer.php reindexall"
+    code <<-EOH
+    chown -R #{user}:#{group} #{node[:magento][:dir]}
+    chmod -R o+w media
+    chmod -R o+w var
+    EOH
   end
 
   bash "Touch .installed flag" do
