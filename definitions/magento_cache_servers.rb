@@ -3,11 +3,20 @@ define :magento_cache_servers do
   # Set page cache servers
   if !node[:magento][:pagecache][:servers].empty? && Chef::Recipe::Magento.tables_exist?(node[:mysql][:bind_address], node[:magento][:db][:username], node[:magento][:db][:password], node[:magento][:db][:database])
     cache_servers = String.new
+    cache_tmp = Array.new
 
-    page_servers = node[:magento][:pagecache][:servers].uniq
+    if node[:magento][:pagecache][:servers][0].kind_of?(Array) # If this is an array of arrays
+      node[:magento][:pagecache][:servers].each do |a|
+        a.each do |ip|
+          cache_tmp.push(ip)
+        end
+      end
+    else
+      cache_tmp = node[:magento][:pagecache][:servers]
+    end
 
-    page_servers.each do |ip|
-      if cache_servers.empty? || 
+    cache_tmp.uniq.each do |ip|
+      if cache_servers.empty?
         cache_servers = ip
       else
         cache_servers = cache_servers + ";#{ip}"
