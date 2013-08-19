@@ -1,3 +1,8 @@
+map $http_x_forwarded_proto $https_offloaded {
+  default off;
+  https on;
+}
+
 map $http_host $magesite {
 
 <% node[:magento][:run_codes].each do |domain, code| %><%= "#{domain} #{code};\n" %><% end %>
@@ -32,6 +37,7 @@ server {
     }
     fastcgi_index index.php;
     include /etc/nginx/fastcgi_params;
+    fastcgi_param HTTPS $https_offloaded;
     fastcgi_param MAGE_RUN_TYPE <%= node[:magento][:run_type] %>;
     fastcgi_param MAGE_RUN_CODE $magesite;
     fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
@@ -49,6 +55,7 @@ server {
     }
     # set fastcgi settings, not allowed in the "if" block
     include /etc/nginx/fastcgi_params;
+    fastcgi_param HTTPS $https_offloaded;
     fastcgi_param MAGE_RUN_TYPE <%= node[:magento][:run_type] %>;
     fastcgi_param MAGE_RUN_CODE $magesite;
     fastcgi_param SCRIPT_FILENAME $document_root/index.php;
